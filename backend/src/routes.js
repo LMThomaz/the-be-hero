@@ -8,10 +8,13 @@ const SessionController = require('./controllers/SessionController');
 
 const routes = express.Router();
 
-routes.post('/sessions', SessionController.create)
+routes.post('/sessions', celebrate({
+   [Segments.BODY]: Joi.object().keys({
+      id: Joi.string().required().length(8),
+   }),
+}),SessionController.create);
 
 routes.get('/ongs', OngController.index);
-
 routes.post('/ongs', celebrate({
    [Segments.BODY]: Joi.object().keys({
       name: Joi.string().required().min(3),
@@ -33,9 +36,16 @@ routes.get('/incidents', celebrate({
       page: Joi.number()
    }),
 }),IncidentController.index);
-routes.post('/incidents', IncidentController.create);
-
-
+routes.post('/incidents', celebrate({
+   [Segments.HEADERS]: Joi.object({
+      authorization: Joi.string().required().length(8),
+   }).unknown(),
+   [Segments.BODY]: Joi.object().keys({
+      title: Joi.string().required(),
+      description: Joi.string().required(),
+      value: Joi.number().required()
+   }),
+}), IncidentController.create);
 routes.delete('/incidents/:id', celebrate({
    [Segments.PARAMS]: Joi.object().keys({
       id: Joi.number().required(),
